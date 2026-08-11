@@ -35,6 +35,7 @@ const Register = ({ onRegister }) => {
     <div className="register-container">
       <h2>Sign Up</h2>
 
+      <form onSubmit={(e) => { e.preventDefault(); register(); }}>
       <input
         type="text"
         placeholder="Username"
