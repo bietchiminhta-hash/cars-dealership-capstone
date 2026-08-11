@@ -19,8 +19,8 @@ def login_user(request):
 from django.contrib.auth import logout
 
 def logout_request(request):
-    username = request.user.username if request.user.is_authenticated else "Guest"
     logout(request)
+    username = request.user.username if request.user.is_authenticated else ""
     return JsonResponse({"userName": username, "status": "Logged out"})
 
 # Data mẫu cho dealers và reviews (thường lấy từ MongoDB, ở đây dùng list cho gọn)
