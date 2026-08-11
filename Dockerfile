@@ -7,7 +7,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Sua ALLOWED_HOSTS truoc khi deploy that (khong dung '*' cho production)
+RUN python manage.py collectstatic --noinput
+
 ENV PORT=8080
 EXPOSE 8080
 
