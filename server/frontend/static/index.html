@@ -7,18 +7,31 @@
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-light bg-light px-4">
-    <a class="navbar-brand" href="./index.html">Best Cars Dealership</a>
+    <a class="navbar-brand" href="/">Best Cars Dealership</a>
     <div class="collapse navbar-collapse">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link active" href="./index.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="./About.html">About Us</a></li>
-        <li class="nav-item"><a class="nav-link" href="./Contact.html">Contact Us</a></li>
+      <ul class="navbar-nav ms-auto" id="navLinks">
+        <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/static/About.html">About Us</a></li>
+        <li class="nav-item"><a class="nav-link" href="/static/Contact.html">Contact Us</a></li>
+        <li class="nav-item" id="authArea"></li>
       </ul>
     </div>
   </nav>
 
   <div class="container mt-5">
-    <h1 class="text-center mb-4">Our Dealers</h1>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1>Our Dealers</h1>
+      <div>
+        <label for="stateFilter" class="me-2">Filter by State:</label>
+        <select id="stateFilter" class="form-select d-inline-block w-auto" onchange="filterByState()">
+          <option value="">All States</option>
+          <option value="CA">CA</option>
+          <option value="IL">IL</option>
+          <option value="Kansas">Kansas</option>
+        </select>
+      </div>
+    </div>
+
     <table class="table table-striped" id="dealersTable">
       <thead>
         <tr>
@@ -27,6 +40,7 @@
           <th>City</th>
           <th>State</th>
           <th>Address</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody id="dealersBody"></tbody>
@@ -34,22 +48,51 @@
   </div>
 
   <script>
-    // Gọi API Django lấy danh sách dealers, render ra bảng
-    fetch("/djangoapp/get_dealers")
-      .then(res => res.json())
-      .then(data => {
-        const body = document.getElementById("dealersBody");
-        data.dealers.forEach(d => {
-          const row = `<tr>
-            <td>${d.id}</td>
-            <td>${d.full_name}</td>
-            <td>${d.city}</td>
-            <td>${d.state}</td>
-            <td>${d.address}</td>
-          </tr>`;
-          body.innerHTML += row;
-        });
+    const username = sessionStorage.getItem("username");
+    const authArea = document.getElementById("authArea");
+    if (username) {
+      authArea.innerHTML = "<span class='nav-link'>Welcome, " + username + "</span>";
+    } else {
+      authArea.innerHTML = "<a class='nav-link' href='/static/Login.html'>Login</a>";
+    }
+
+    function renderDealers(dealers) {
+      const body = document.getElementById("dealersBody");
+      body.innerHTML = "";
+      dealers.forEach(d => {
+        const reviewLink = username
+          ? "<a href='/static/dealer.html?id=" + d.id + "' class='btn btn-sm btn-outline-primary'>Review Dealer</a>"
+          : "";
+        const row = "<tr>" +
+          "<td>" + d.id + "</td>" +
+          "<td>" + d.full_name + "</td>" +
+          "<td>" + d.city + "</td>" +
+          "<td>" + d.state + "</td>" +
+          "<td>" + d.address + "</td>" +
+          "<td>" + reviewLink + "</td>" +
+          "</tr>";
+        body.innerHTML += row;
       });
+    }
+
+    function loadAllDealers() {
+      fetch("/djangoapp/get_dealers")
+        .then(res => res.json())
+        .then(data => renderDealers(data.dealers));
+    }
+
+    function filterByState() {
+      const state = document.getElementById("stateFilter").value;
+      if (state === "") {
+        loadAllDealers();
+      } else {
+        fetch("/djangoapp/dealers/" + state)
+          .then(res => res.json())
+          .then(data => renderDealers(data.dealers));
+      }
+    }
+
+    loadAllDealers();
   </script>
 </body>
 </html>
