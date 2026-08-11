@@ -26,5 +26,4 @@ jobs:
 
     - name: Run Django checks
       run: |
-        cd djangoproj
         python manage.py check
