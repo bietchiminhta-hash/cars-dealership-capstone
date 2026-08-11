@@ -27,7 +27,7 @@
     // Lay id dealer tu URL, vi du: /static/dealer.html?id=1
     const params = new URLSearchParams(window.location.search);
     const dealerId = params.get("id");
-    document.getElementById("postReviewLink").href = "/static/postReview.html?id=" + dealerId;
+    document.getElementById("postReviewLink").href = "/postreview?id=" + dealerId;
 
     fetch("/djangoapp/dealer/" + dealerId)
       .then(res => res.json())
