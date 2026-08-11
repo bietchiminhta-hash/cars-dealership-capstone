@@ -130,3 +130,6 @@ MAILERS = {
 CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev', 'https://*.ngrok-free.app']
 
 STATICFILES_DIRS = [BASE_DIR / 'server/frontend/static']
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
