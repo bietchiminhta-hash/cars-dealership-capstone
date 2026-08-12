@@ -69,7 +69,7 @@ def get_dealer_reviews(request, dealer_id):
 def get_dealer_by_id(request, dealer_id):
     dealer = next((d for d in dealers_data if d["id"] == dealer_id), None)
     if dealer:
-        return JsonResponse({"status": 200, "dealer": dealer})
+        return JsonResponse({"status": 200, "dealer": [dealer]})
     else:
         return JsonResponse({"status": 404, "message": "Dealer not found"})
 
