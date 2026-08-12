@@ -19,15 +19,21 @@
 
   <div class="container mt-5">
     <div id="dealerInfo" class="mb-4"></div>
-    <a id='postReviewLink' href='#' class='btn btn-success mb-3'>Write a Review</a><h3>Reviews</h3>
+    <a id="postReviewLink" href="#" class="btn btn-success mb-3">Write a Review</a>
+    <h3>Reviews</h3>
     <div id="reviewsList"></div>
   </div>
 
   <script>
-    // Lay id dealer tu URL, vi du: /static/dealer.html?id=1
     const params = new URLSearchParams(window.location.search);
     const dealerId = params.get("id");
     document.getElementById("postReviewLink").href = "/postreview?id=" + dealerId;
+
+    function sentimentIcon(label) {
+      if (label === "positive") return "😊";
+      if (label === "negative") return "😞";
+      return "😐";
+    }
 
     fetch("/djangoapp/dealer/" + dealerId)
       .then(res => res.json())
@@ -47,12 +53,18 @@
           return;
         }
         data.reviews.forEach(r => {
-          const card = "<div class='card mb-2 p-3'>" +
-            "<strong>" + r.name + "</strong>" +
-            "<p>" + r.review + "</p>" +
-            "<small>Car: " + r.car_year + " " + r.car_make + " " + r.car_model + "</small>" +
-            "</div>";
-          list.innerHTML += card;
+          // Goi API phan tich cam xuc cho tung review
+          fetch("/djangoapp/analyze/" + encodeURIComponent(r.review))
+            .then(res => res.json())
+            .then(sentimentData => {
+              const icon = sentimentIcon(sentimentData.sentiment);
+              const card = "<div class='card mb-2 p-3'>" +
+                "<strong>" + r.name + "</strong> <span style='font-size:1.3em'>" + icon + "</span>" +
+                "<p>" + r.review + "</p>" +
+                "<small>Car: " + r.car_year + " " + r.car_make + " " + r.car_model + "</small>" +
+                "</div>";
+              list.innerHTML += card;
+            });
         });
       });
   </script>
