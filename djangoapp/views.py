@@ -1,8 +1,8 @@
-
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+import random
 
 @csrf_exempt
 def login_user(request):
@@ -23,19 +23,40 @@ def logout_request(request):
     username = request.user.username if request.user.is_authenticated else ""
     return JsonResponse({"userName": username, "status": "Logged out"})
 
-# Data mẫu cho dealers và reviews (thường lấy từ MongoDB, ở đây dùng list cho gọn)
-dealers_data = [
-    {"id": 1, "full_name": "Best Cars LA", "city": "Los Angeles", "state": "CA", "st": "CA", "address": "123 Main St", "zip": "90001", "lat": 34.05, "long": -118.24},
-    {"id": 2, "full_name": "Sunset Motors", "city": "San Francisco", "state": "CA", "st": "CA", "address": "45 Sunset Blvd", "zip": "94102", "lat": 37.77, "long": -122.41},
-    {"id": 3, "full_name": "Downtown Autos", "city": "Chicago", "state": "IL", "st": "IL", "address": "78 Lake St", "zip": "60601", "lat": 41.88, "long": -87.63},
-    {"id": 4, "full_name": "Wichita Auto Hub", "city": "Wichita", "state": "Kansas", "st": "KS", "address": "200 Main St", "zip": "67202", "lat": 37.68, "long": -97.33},
-    {"id": 4, "full_name": "Wichita Auto Hub", "city": "Wichita", "state": "Kansas", "st": "KS", "address": "200 Main St", "zip": "67202", "lat": 37.68, "long": -97.33},
+# Data mau cho 50 dealers (id, city, state, address, zip, lat, long, short_name, full_name)
+_cities = [
+    ("Los Angeles", "CA"), ("San Francisco", "CA"), ("Chicago", "IL"), ("Wichita", "Kansas"),
+    ("New York", "NY"), ("Houston", "TX"), ("Phoenix", "AZ"), ("Philadelphia", "PA"),
+    ("San Antonio", "TX"), ("San Diego", "CA"), ("Dallas", "TX"), ("Austin", "TX"),
+    ("Jacksonville", "FL"), ("Columbus", "OH"), ("Charlotte", "NC"), ("Seattle", "WA"),
+    ("Denver", "CO"), ("Boston", "MA"), ("Nashville", "TN"), ("Detroit", "MI"),
 ]
 
+dealers_data = []
+for i in range(1, 51):
+    city, state = _cities[(i - 1) % len(_cities)]
+    dealers_data.append({
+        "id": i,
+        "full_name": f"Best Cars Dealership {i}",
+        "short_name": f"BCD{i}",
+        "city": city,
+        "state": state,
+        "st": state[:2].upper(),
+        "address": f"{100 + i} Main St",
+        "zip": f"{10000 + i}",
+        "lat": round(30 + random.uniform(0, 15), 2),
+        "long": round(-120 + random.uniform(0, 40), 2),
+    })
+
+dealers_data[0] = {"id": 1, "full_name": "Best Cars LA", "short_name": "BCLA", "city": "Los Angeles", "state": "CA", "st": "CA", "address": "123 Main St", "zip": "90001", "lat": 34.05, "long": -118.24}
+dealers_data[1] = {"id": 2, "full_name": "Sunset Motors", "short_name": "SUNM", "city": "San Francisco", "state": "CA", "st": "CA", "address": "45 Sunset Blvd", "zip": "94102", "lat": 37.77, "long": -122.41}
+dealers_data[2] = {"id": 3, "full_name": "Downtown Autos", "short_name": "DTAU", "city": "Chicago", "state": "IL", "st": "IL", "address": "78 Lake St", "zip": "60601", "lat": 41.88, "long": -87.63}
+dealers_data[3] = {"id": 4, "full_name": "Wichita Auto Hub", "short_name": "WICH", "city": "Wichita", "state": "Kansas", "st": "KS", "address": "200 Main St", "zip": "67202", "lat": 37.68, "long": -97.33}
+
 reviews_data = [
-    {"id": 1, "dealership": 1, "name": "Alice Nguyen", "review": "Great service and friendly staff!", "purchase": True, "car_make": "Toyota", "car_model": "Camry", "car_year": 2022},
-    {"id": 2, "dealership": 1, "name": "Bob Tran", "review": "Fast process, got my car in 2 days.", "purchase": True, "car_make": "Honda", "car_model": "Civic", "car_year": 2021},
-    {"id": 3, "dealership": 2, "name": "Carol Le", "review": "Good prices but limited stock.", "purchase": False, "car_make": "Ford", "car_model": "Focus", "car_year": 2020},
+    {"id": 1, "dealership": 1, "name": "Alice Nguyen", "review": "Great service and friendly staff!", "purchase": True, "purchase_date": "2023-05-10", "car_make": "Toyota", "car_model": "Camry", "car_year": 2022},
+    {"id": 2, "dealership": 1, "name": "Bob Tran", "review": "Fast process, got my car in 2 days.", "purchase": True, "purchase_date": "2023-08-22", "car_make": "Honda", "car_model": "Civic", "car_year": 2021},
+    {"id": 3, "dealership": 2, "name": "Carol Le", "review": "Good prices but limited stock.", "purchase": False, "purchase_date": "", "car_make": "Ford", "car_model": "Focus", "car_year": 2020},
 ]
 
 def get_dealerships(request):
@@ -56,11 +77,7 @@ def get_dealers_by_state(request, state):
     filtered = [d for d in dealers_data if d["state"].lower() == state.lower()]
     return JsonResponse({"status": 200, "dealers": filtered})
 
-def get_dealers_by_state(request, state):
-    filtered = [d for d in dealers_data if d["state"].lower() == state.lower()]
-    return JsonResponse({"status": 200, "dealers": filtered})
-
-# Data mẫu car makes và models tương ứng
+# Data mau car makes va models tuong ung
 car_makes_models = [
     {"CarMake": "Toyota", "CarModel": ["Camry", "Corolla", "RAV4"]},
     {"CarMake": "Honda", "CarModel": ["Civic", "Accord", "CR-V"]},
@@ -71,7 +88,7 @@ def get_cars(request):
     return JsonResponse({"CarModels": car_makes_models})
 
 def analyze_review_sentiment(request, text):
-    # Phân tích cảm xúc đơn giản dựa trên từ khóa (thay cho Watson NLU thật)
+    # Phan tich cam xuc don gian dua tren tu khoa (thay cho Watson NLU that)
     positive_words = ["good", "great", "fantastic", "excellent", "friendly", "fast", "amazing"]
     negative_words = ["bad", "poor", "terrible", "slow", "rude", "worst"]
 
@@ -99,6 +116,7 @@ def add_review(request):
         "name": data.get("name"),
         "review": data.get("review"),
         "purchase": data.get("purchase"),
+        "purchase_date": data.get("purchase_date", ""),
         "car_make": data.get("car_make"),
         "car_model": data.get("car_model"),
         "car_year": data.get("car_year"),
