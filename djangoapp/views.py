@@ -66,7 +66,7 @@ def get_dealer_reviews(request, dealer_id):
     filtered = [r for r in reviews_data if r["dealership"] == dealer_id]
     return JsonResponse({"status": 200, "reviews": filtered})
 
-def get_dealer_by_id(request, dealer_id):
+def get_dealer_by_id(request, dealer_id):    
     dealer = next((d for d in dealers_data if d["id"] == dealer_id), None)
     if dealer:
         return JsonResponse({"status": 200, "dealer": [dealer]})
@@ -100,7 +100,7 @@ def analyze_review_sentiment(request, text):
     else:
         sentiment = "neutral"
 
-    return JsonResponse({"sentiment": {"document": {"label": sentiment}}})
+    return JsonResponse({"sentiment": sentiment})
 
 from django.shortcuts import render
 
